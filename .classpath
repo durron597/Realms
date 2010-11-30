@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/minecraft/server/minecraft_server.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Minecraft_mod 128"/>
+	<classpathentry kind="lib" path="D:/minecraft/perf4j-0.9.13.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
