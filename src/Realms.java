@@ -14,6 +14,7 @@ public class Realms extends Plugin
 	int wandItem = config.getInt("wandItem", 280);
 	int pylonType = config.getInt("pylonType", 7);
 	int pylonHeight = config.getInt("pylonHeight", 3);
+	int sanctuaryTimeout = config.getInt("sanctuaryTimeout", 1);
 	boolean grantbyDefault = config.getBoolean("grantbyDefault", true);
 	boolean grantOverrulesDeny = config.getBoolean("grantOverrulesDeny", true);
 	Server server = etc.getServer();
@@ -398,7 +399,7 @@ public class Realms extends Plugin
 		etc.getLoader().addListener(PluginLoader.Hook.EXPLODE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.CRITICAL);
 		
-		sanctuaryThread = new Thread(new SanctuaryThread(this));
+		sanctuaryThread = new Thread(new SanctuaryThread(this, sanctuaryTimeout));
 		sanctuaryThread.start();
 	}
 

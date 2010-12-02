@@ -2,15 +2,17 @@ import java.util.List;
 
 public class SanctuaryThread implements Runnable {
 	private Realms realm = null;
+	private long sanctuaryTimeout = 1000L; 
 
-	public SanctuaryThread(Realms realm) {
+	public SanctuaryThread(Realms realm, int SanctuaryTimeout) {
 		this.realm = realm;
+		this.sanctuaryTimeout = this.sanctuaryTimeout * 1000L;
 	}
 
 	public void run() {
 		while (realm.isSanctuaryEnabled()) {
 			try {
-				Thread.sleep(1000L);
+				Thread.sleep(this.sanctuaryTimeout);
 			} catch (Exception localException1) {
 				break;
 			}
