@@ -8,12 +8,11 @@ public class Realms extends Plugin
 {
 	private final RealmsListener listener = new RealmsListener(this);
 	public static final Logger log = Logger.getLogger("Minecraft");
-//	List<String> validPermissions = new ArrayList<String>(Arrays.asList("create", "destroy", "zoning", "delegate", "message", "enter", "teleport"));
 	public static final String name = "Realms";
-	public static final String version = "v1.0rc4";
+	public static final String version = "v2.0";
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
-	int pylonType = config.getInt("pylonType", 49);
+	int pylonType = config.getInt("pylonType", 7);
 	int pylonHeight = config.getInt("pylonHeight", 3);
 	boolean grantbyDefault = config.getBoolean("grantbyDefault", true);
 	boolean grantOverrulesDeny = config.getBoolean("grantOverrulesDeny", true);
@@ -22,12 +21,14 @@ public class Realms extends Plugin
 	public List<Zone> zones = new ArrayList<Zone>();
 	public List<Wand> wands = new ArrayList<Wand>();
 	public Hashtable<Zone,ArrayList<Permission>> zonePermissions = new Hashtable<Zone,ArrayList<Permission>>();
-//	public Hashtable<Player,ArrayList<Zone>> playerZoneList = new Hashtable<Player,ArrayList<Zone>>();
-
+	public Hashtable<Player,ArrayList<Zone>> playerZoneList = new Hashtable<Player,ArrayList<Zone>>();
+	private boolean sanctuaryEnabled = true;
+	private Thread sanctuaryThread = null;
+	
 	RealmsData data = new RealmsData(this);
 
 	public enum RealmsCommands {
-		GIVEMEPERMISSION ("givemepermission") {
+		GIVEMEPERMISSION ("givemepermission", "") {
 			@Override
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(player.isInGroup("admins")) theRealms.setPermission(player.getName(), Permission.PermType.ALL, theRealms.everywhere, true, false);
@@ -35,14 +36,7 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		DELETEZONE ("deletezone") {
-			private final String usage = "Usage: /realms deletezone <zone name>";
-			
-			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
+		DELETEZONE ("deletezone", "<zone name>") {
 			@Override
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(3, command, player)) return true;
@@ -57,64 +51,44 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-//		SETGREETING ("setgreeting"){
-//			private final String usage = "Usage: /realms setgreeting <zone> [greeting]";
-//			
-//			@Override
-//			public String getUsage() {
-//				return usage;
-//			}
-//			
-//			@Override
-//			public boolean execute(Player player, String[] command, Realms theRealms) {
-//				if(argumentCountCheck(3, command, player)) return true;
-//				String zoneName = command[2];
-//				Zone zone = theRealms.getZoneByName(zoneName);
-//				if(zone == null) return playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
-//				if(!theRealms.permissionCheck(player, Permission.PermType.MESSAGE, zone)) return playerError(player, "Error: You do not have permission to set the greeting of this zone!");
-//				String greeting = "";
-//				for(int i = 3; i < command.length; i++) {
-//					if(command[i].contains(",")) return playerError(player, "Error: Greetings cannot contain commas!");
-//					greeting += " " + command[i];
-//				}
-//				zone.setGreeting(greeting.trim());
-//				player.sendMessage("Greeting set to " + greeting.trim());
-//				return true;
-//			}
-//		},
-//		SETFAREWELL ("setfarewell") {
-//			private final String usage = "Usage: /realms setfarewell <zone> [greeting]";
-//			
-//			@Override
-//			public String getUsage() {
-//				return usage;
-//			}
-//			
-//			@Override
-//			public boolean execute(Player player, String[] command, Realms theRealms) {
-//				if(argumentCountCheck(3, command, player)) return true;
-//				String zoneName = command[2];
-//				Zone zone = theRealms.getZoneByName(zoneName);
-//				if(zone == null) return playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
-//				if(!theRealms.permissionCheck(player, Permission.PermType.MESSAGE, zone)) return playerError(player, "Error: You do not have permission to set the farewell message of this zone!");
-//				String farewell = "";
-//				for(int i = 3; i < command.length; i++) {
-//					if(command[i].contains(",")) return playerError(player, "Error: Greetings cannot contain commas!");
-//					farewell += " " + command[i];
-//				}
-//				zone.setFarewell(farewell.trim());
-//				player.sendMessage("Farewell set to " + farewell.trim());
-//				return true;
-//			}
-//		},	
-		LIST ("list") {
-			private final String usage = "Usage: /realms list <zone>";
-			
+		SETGREETING ("setgreeting", "<zone> [greeting]") {
 			@Override
-			public String getUsage() {
-				return usage;
+			public boolean execute(Player player, String[] command, Realms theRealms) {
+				if(argumentCountCheck(3, command, player)) return true;
+				String zoneName = command[2];
+				Zone zone = theRealms.getZoneByName(zoneName);
+				if(zone == null) return playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
+				if(!theRealms.permissionCheck(player, Permission.PermType.MESSAGE, zone)) return playerError(player, "Error: You do not have permission to set the greeting of this zone!");
+				String greeting = "";
+				for(int i = 3; i < command.length; i++) {
+					if(command[i].contains(",")) return playerError(player, "Error: Greetings cannot contain commas!");
+					greeting += " " + command[i];
+				}
+				zone.setGreeting(greeting.trim());
+				player.sendMessage("Greeting set to " + greeting.trim());
+				return true;
 			}
-			
+		},
+		SETFAREWELL ("setfarewell", "<zone> [greeting]") {
+			@Override
+			public boolean execute(Player player, String[] command, Realms theRealms) {
+				if(argumentCountCheck(3, command, player)) return true;
+				String zoneName = command[2];
+				Zone zone = theRealms.getZoneByName(zoneName);
+				if(zone == null) return playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
+				if(!theRealms.permissionCheck(player, Permission.PermType.MESSAGE, zone)) return playerError(player, "Error: You do not have permission to set the farewell message of this zone!");
+				String farewell = "";
+				for(int i = 3; i < command.length; i++) {
+					if(command[i].contains(",")) return playerError(player, "Error: Greetings cannot contain commas!");
+					farewell += " " + command[i];
+				}
+				zone.setFarewell(farewell.trim());
+				player.sendMessage("Farewell set to " + farewell.trim());
+				return true;
+			}
+		},	
+		LIST ("list", "<zone>") {
+			@Override
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(3, command, player)) return true;
 				String zoneName = command[2];
@@ -125,14 +99,8 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		DELETE ("delete") {
-			private final String usage = "Usage: /realms delete <playername> <permissiontype> <zone>";
-		
+		DELETE ("delete", "<playername> <permissiontype> <zone>") {
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(5, command, player)) return true;
 				String playerName = command[2];
@@ -153,38 +121,20 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		GRANT ("grant") {
-			private final String usage = "Usage: /realms grant <playername> <permissiontype> <zone> [override]";
-		
-			@Override
-			public String getUsage() {
-				return usage;
-			}
+		GRANT ("grant", "<playername> <permissiontype> <zone> [override]") {
 			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				return this.doGrantDeny(player, command, theRealms);
 			}
 		},
-		DENY ("deny") {
-			private final String usage = "Usage: /realms grant <playername> <permissiontype> <zone> [override]";
-		
+		DENY ("deny", "<playername> <permissiontype> <zone> [override]") {
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				return this.doGrantDeny(player, command, theRealms);
 			}
 		},
-		CREATEZONE ("createzone") {
-			private final String usage = "Usage: /realms createzone <zone> <parentzone>";
-			
+		CREATEZONE ("createzone", "<zone> <parentzone>") {
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(4, command, player)) return true;
 				String zoneName = command[2];
@@ -208,14 +158,8 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		PVP ("pvp") {
-			private final String usage = "Usage: /realms pvp <zone> <on|off|inherit>";
-			
+		PVP ("pvp", "<zone> <on|off|inherit>") {
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(4, command, player)) return true;
 				
@@ -246,14 +190,8 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		SANCTUARY ("sanctuary") {
-			private final String usage = "Usage: /realms sanctuary <zone> <on|off|inherit>";
-			
+		SANCTUARY ("sanctuary", "<zone> <on|off|inherit>") {		
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(4, command, player)) return true;
 				
@@ -285,14 +223,8 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		CREEPER ("creeper") {
-			private final String usage = "Usage: /realms creeper <zone> <on|off|inherit>";
-			
+		CREEPER ("creeper", "<zone> <on|off|inherit>") {
 			@Override
-			public String getUsage() {
-				return usage;
-			}
-			
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(4, command, player)) return true;
 				
@@ -324,14 +256,40 @@ public class Realms extends Plugin
 				return true;
 			}
 		},
-		COMBAT ("combat") {
-			private final String usage = "Usage: /realms combat <zone>";
-			
+		HEALING ("healing", "<zone> <percentage|-1 for inherit>") {
 			@Override
-			public String getUsage() {
-				return usage;
+			public boolean execute(Player player, String[] command, Realms theRealms) {
+				if(argumentCountCheck(4, command, player)) return true;
+				
+				String zoneName = command[2];
+				Zone zone = theRealms.getZoneByName(zoneName);
+				if(zone == null) return playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
+				
+				int newHealing = zone.getAbsoluteHealing();
+				
+				try {
+					newHealing = Integer.parseInt(command[3]);
+				} catch (NumberFormatException ex) {
+					player.sendMessage("Error: the number was not valid. Please use 0-100 (percentage) or -1 to inherit from parent zone");
+				}
+				
+				if (newHealing < 0 || newHealing > 100) {
+					if (newHealing != -1) return playerError(player, "Error: the number was not valid. Please use 0-100 (percentage) or -1 to inherit from parent zone");
+					else if (zone.equals(theRealms.everywhere)) return playerError(player, "Error: You cannot set the healing to inherit in zone everywhere!");
+					else {
+						zone.setHealing(newHealing);
+						player.sendMessage("Healing percentage set to inherit in zone " + zoneName);
+					}
+				} else {
+					zone.setHealing(newHealing);
+					player.sendMessage("Healing percentage set to " + newHealing + " in zone " + zoneName);
+				}
+				
+				return true;
 			}
-			
+		},
+		COMBAT ("combat", "<zone>") {
+			@Override
 			public boolean execute(Player player, String[] command, Realms theRealms) {
 				if(argumentCountCheck(3, command, player)) return true;
 				String zoneName = command[2];
@@ -342,16 +300,18 @@ public class Realms extends Plugin
 				player.sendMessage("Sanctuary: " + (zone.getSanctuary() ? "ON" : "OFF") + (zone.getAbsoluteSanctuary().equals(Zone.ZoneType.INHERIT) ? " (inherited)" : ""));
 				player.sendMessage("Creeper: " + (zone.getCreeper()  ? "ON" : "OFF") + (zone.getAbsoluteCreeper().equals(Zone.ZoneType.INHERIT) ? " (inherited)" : ""));
 				int healing = zone.getHealing();
-				player.sendMessage("Healing: " + (healing == 0 ? "OFF" : new StringBuffer(healing).append(" seconds per heal").toString()) + (zone.getAbsoluteHealing() == -1 ? " (inherited)" : ""));
+				player.sendMessage("Healing: " + (healing == 0 ? "OFF" : new StringBuffer().append(healing).append(" percentage").toString()) + (zone.getAbsoluteHealing() == -1 ? " (inherited)" : ""));
 				return true;
 			}
 		},
-		INVALID ("");
+		INVALID ("", "<command> <arguments>");
 		
 		private String commandName;
+		protected final String usage;
 		
-		private RealmsCommands(String commandName) {
+		private RealmsCommands(String commandName, String usage) {
 			this.commandName = commandName;
+			this.usage = usage;
 		}
 
 		public String getCommandName() {
@@ -359,11 +319,11 @@ public class Realms extends Plugin
 		}
 
 		public boolean execute(Player player, String[] command, Realms theRealms) {
-			return playerError(player, "/Realms command not understood.");
+			return playerError(player, "/realms command not understood.");
 		}
 		
 		public String getUsage() {
-			return "Usage: /realms <command> <arguments>";
+			return "Usage: /realms " + commandName + " " + usage;
 		}
 		
 		public boolean argumentCountCheck(int argumentsRequired, String[] command, Player player) {
@@ -404,6 +364,7 @@ public class Realms extends Plugin
 	
 	public Realms() {}
 
+	@Override
 	public void enable() {
 		zones = new ArrayList<Zone>();
 		wands = new ArrayList<Wand>();
@@ -418,11 +379,16 @@ public class Realms extends Plugin
 		log.info("Realms Mod Enabled.");
 	}
 
-	public void disable() { log.info("Realms Mod Disabled."); }
+	@Override
+	public void disable() {
+		log.info("Realms Mod Disabled.");
+	}
 
+	@Override
 	public void initialize() {
 		//Here we add the hook we're going to use. In this case it's the arm swing event.
-		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_CREATED, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_PLACE, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_RIGHTCLICKED, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_DESTROYED, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.PLAYER_MOVE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, RealmsListener.Priority.MEDIUM);
@@ -430,7 +396,10 @@ public class Realms extends Plugin
 		etc.getLoader().addListener(PluginLoader.Hook.DISCONNECT, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.DAMAGE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.EXPLODE, listener, this, RealmsListener.Priority.MEDIUM);
-		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.CRITICAL);
+		
+		sanctuaryThread = new Thread(new SanctuaryThread(this));
+		sanctuaryThread.start();
 	}
 
 
@@ -567,6 +536,20 @@ public class Realms extends Plugin
 		if(grantOverrulesDeny && p2.getAllowed()) return p2;
 		else if(!grantOverrulesDeny && !p2.getAllowed()) return p2;
 		else return p1;
+	}
+
+	/**
+	 * @param sanctuaryEnabled the sanctuaryEnabled to set
+	 */
+	public void setSanctuaryEnabled(boolean sanctuaryEnabled) {
+		this.sanctuaryEnabled = sanctuaryEnabled;
+	}
+
+	/**
+	 * @return the sanctuaryEnabled
+	 */
+	public boolean isSanctuaryEnabled() {
+		return sanctuaryEnabled;
 	}
 
 	// Overrides previous permission if it existed

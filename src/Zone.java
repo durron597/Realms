@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Zone {
 
 	private Realms realm;
@@ -217,7 +216,7 @@ public class Zone {
 		saveZone();
 	}
 	
-	public void setCreeper(int healing) {
+	public void setHealing(int healing) {
 		this.healing = healing;
 		saveZone();
 	}
@@ -255,7 +254,7 @@ public class Zone {
 		for(Permission p : permissionList) p.delete();
 		if(parent != null) parent.removeChild(this);
 		for(Zone child : getChildren()) if(parent != null) child.setParent(parent);
-//		for(ArrayList<Zone> zoneList : realm.playerZoneList.values()) zoneList.remove(this);
+		for(ArrayList<Zone> zoneList : realm.playerZoneList.values()) zoneList.remove(this);
 		realm.data.modifyFileLine(RealmsData.zoneFile, this.name + ",", null, true);
 		realm.zones.remove(this);
 	}
