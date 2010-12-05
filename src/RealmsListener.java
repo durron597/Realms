@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-
 public class RealmsListener extends PluginListener {
 
 	private Realms realm;
@@ -55,6 +54,11 @@ public class RealmsListener extends PluginListener {
 	@Override
 	public void onBlockRightClicked(Player player, Block blockClicked, Item item) {
 		if(item.getItemId() == realm.wandItem) realm.getPlayerWand(player).wandClick(player, blockClicked);
+	}
+	
+	@Override
+	public boolean onItemUse(Player player, Block blockPlaced, Block blockClicked, Item item) {
+		return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
 	}
 	
 	@Override

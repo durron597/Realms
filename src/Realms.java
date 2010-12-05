@@ -390,6 +390,7 @@ public class Realms extends Plugin
 		//Here we add the hook we're going to use. In this case it's the arm swing event.
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_PLACE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_RIGHTCLICKED, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.ITEM_USE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_DESTROYED, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.PLAYER_MOVE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, RealmsListener.Priority.MEDIUM);
