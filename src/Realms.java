@@ -473,7 +473,7 @@ public class Realms extends Plugin
 
 	// Gets a list of all zones that the player is currently contained by
 	public ArrayList<Zone> getZones(Zone zone, Player player) {
-		ArrayList<Zone> newZoneList = new ArrayList<Zone>();
+		ArrayList<Zone> newZoneList = new ArrayList<Zone>(5);
 		newZoneList.add(zone);
 		for(Zone child : zone.getChildren()) {
 			if(child.contains(player)) {

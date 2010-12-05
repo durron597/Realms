@@ -15,12 +15,12 @@ public class RealmsListener extends PluginListener {
 
 	@Override
 	public void onPlayerMove(Player player, Location from, Location to) {
-		if(!realm.permissionCheck(player, Permission.PermType.ENTER, realm.server.getBlockAt((int)to.x, (int)to.y, (int)to.z))) {
+		if(!realm.permissionCheck(player, Permission.PermType.ENTER, realm.server.getBlockAt((int) Math.floor(to.x), (int) Math.floor(to.y), (int) Math.floor(to.z)))) {
 			player.sendMessage("You do not have permission to enter that zone!");
 			player.teleportTo(from);
 		}
 		
-//		playerMessage(player);
+		playerMessage(player);
 		heal(player);
 	}
 
@@ -28,13 +28,15 @@ public class RealmsListener extends PluginListener {
 		if(realm.playerZoneList.get(player) == null) realm.playerZoneList.put(player, realm.getZones(realm.everywhere, player));
 		ArrayList<Zone> oldZoneList = realm.playerZoneList.get(player);
 		ArrayList<Zone> newZoneList = realm.getZones(realm.everywhere, player);
-		for(Zone zone : oldZoneList) if(!newZoneList.contains(zone)) zone.farewell(player);
-		for(Zone zone : newZoneList) if(!oldZoneList.contains(zone)) zone.greet(player);
+		if (oldZoneList.hashCode() != newZoneList.hashCode()) {
+			for(Zone zone : oldZoneList) if(!newZoneList.contains(zone)) zone.farewell(player);
+			for(Zone zone : newZoneList) if(!oldZoneList.contains(zone)) zone.greet(player);
+		}
 		realm.playerZoneList.put(player, newZoneList);
 	}
 	
 	private void heal(Player player) {
-		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) player.getX(), (int) player.getY(), (int) player.getZ()));
+		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(player.getX()), (int) Math.floor(player.getY()), (int) Math.floor(player.getZ())));
 		
 		if (player.getHealth() < 20 && rand.nextInt(500) < zone.getHealing()) player.increaseHealth(1);
 	}
@@ -99,11 +101,11 @@ public class RealmsListener extends PluginListener {
 			if ( defender.isPlayer() ){
 				Player target = defender.getPlayer();
 				if ( attacker.isPlayer() ){
-					Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) target.getX(), (int) target.getY(), (int) target.getZ()));
+					Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(target.getX()), (int) Math.floor(target.getY()), (int) Math.floor(target.getZ())));
 					return !zone.getPVP();
 				}
 				else if ( attacker.isMob() ){
-					Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int)target.getX(), (int)target.getY(), (int)target.getZ()));
+					Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(target.getX()), (int) Math.floor(target.getY()), (int) Math.floor(target.getZ())));
 					return zone.getSanctuary();
 				}
 			}
@@ -115,7 +117,7 @@ public class RealmsListener extends PluginListener {
 	public boolean onMobSpawn(Mob mob) {
 		boolean rValue;
 
-		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) mob.getX(), (int) mob.getY(), (int) mob.getZ()));
+		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(mob.getX()), (int) Math.floor(mob.getY()), (int) Math.floor(mob.getZ())));
 		
 		if (mob.getName().equals("Creeper")) {
 			rValue = !zone.getCreeper() || zone.getSanctuary();
@@ -129,7 +131,7 @@ public class RealmsListener extends PluginListener {
 	@Override
 	public boolean onExplode(Block block) {
 		if ( block.getStatus()==2 ){
-			Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) block.getX(), (int) block.getY(), (int) block.getZ()));
+			Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(block.getX()), (int) Math.floor(block.getY()), (int) Math.floor(block.getZ())));
 			return !zone.getCreeper();
 		}
 		return false;

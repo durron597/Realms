@@ -2,7 +2,8 @@ import java.util.List;
 
 public class SanctuaryThread implements Runnable {
 	private Realms realm = null;
-	private long sanctuaryTimeout = 1000L; 
+	private long sanctuaryTimeout = 1000L;
+	
 
 	public SanctuaryThread(Realms realm, int SanctuaryTimeout) {
 		this.realm = realm;
@@ -17,11 +18,10 @@ public class SanctuaryThread implements Runnable {
 				break;
 			}
 			
-			List<LivingEntity> entityList = realm.server.getLivingEntityList();
-			for (LivingEntity theEntity : entityList) {
-				if (theEntity.isMob()) {
-					Mob theMob = (Mob) theEntity;
-					Zone myZone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) theEntity.getX(), (int) theEntity.getY(), (int) theEntity.getZ()));
+			List<Mob> mobList = realm.server.getMobList();
+			for (Mob theMob : mobList) {
+				if (theMob.isMob()) {
+					Zone myZone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(theMob.getX()), (int) Math.floor(theMob.getY()), (int) Math.floor(theMob.getZ())));
 					
 					if (myZone.getSanctuary()) killMob(theMob);
 					else if (theMob.getName().equals("Creeper") && !myZone.getCreeper()) killMob(theMob);

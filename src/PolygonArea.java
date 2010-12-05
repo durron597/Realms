@@ -118,7 +118,7 @@ public class PolygonArea {
 	}
 
 	public boolean contains(Player player) {
-		Point p = new Point((int)Math.round(player.getLocation().x), (int)Math.round(player.getLocation().y), (int)Math.round(player.getLocation().z));
+		Point p = new Point((int)Math.floor(player.getLocation().x), (int)Math.floor(player.getLocation().y), (int)Math.floor(player.getLocation().z));
 		return this.contains(p);
 	}
 
