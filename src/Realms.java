@@ -397,17 +397,17 @@ public class Realms extends Plugin
 	@Override
 	public void initialize() {
 		//Here we add the hook we're going to use. In this case it's the arm swing event.
-		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_PLACE, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_PLACE, listener, this, RealmsListener.Priority.HIGH);
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_RIGHTCLICKED, listener, this, RealmsListener.Priority.MEDIUM);
-		etc.getLoader().addListener(PluginLoader.Hook.ITEM_USE, listener, this, RealmsListener.Priority.MEDIUM);
-		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_DESTROYED, listener, this, RealmsListener.Priority.MEDIUM);
+		etc.getLoader().addListener(PluginLoader.Hook.ITEM_USE, listener, this, RealmsListener.Priority.HIGH);
+		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_DESTROYED, listener, this, RealmsListener.Priority.HIGH);
 		etc.getLoader().addListener(PluginLoader.Hook.PLAYER_MOVE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.LOGIN, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.DISCONNECT, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.DAMAGE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.EXPLODE, listener, this, RealmsListener.Priority.MEDIUM);
-		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.CRITICAL);
+		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.MEDIUM);
 		
 		sanctuaryThread = new Thread(new SanctuaryThread(this, sanctuaryTimeout));
 		sanctuaryThread.start();
