@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class Zone {
 
@@ -56,7 +57,7 @@ public class Zone {
 		realm.zones.add(this);
 		realm.zonePermissions.put(this, new ArrayList<Permission>());
 		this.saveZoneToFile();
-		Realms.log.info("Zone created: " + name);
+		Realms.log(Level.INFO, "Zone created: " + name);
 	}
 
 	// CSV File Constructor
@@ -224,11 +225,11 @@ public class Zone {
 	/*
 	 * Other Methods
 	 */
-	public void farewell(Player player) {
+	public void farewell(Player player, Realms realm) {
 		if(farewell != null) player.sendMessage(farewell);
 	}
 
-	public void greet(Player player) {
+	public void greet(Player player, Realms realm) {
 		if(greeting != null) player.sendMessage(greeting);
 	}
 
