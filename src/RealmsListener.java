@@ -25,14 +25,14 @@ public class RealmsListener extends PluginListener {
 	}
 
 	public void playerMessage(Player player) {
-		if(realm.playerZoneList.get(player) == null) realm.playerZoneList.put(player, realm.getZones(realm.everywhere, player));
-		ArrayList<Zone> oldZoneList = realm.playerZoneList.get(player);
+		if(realm.playerZoneList.get(player.getName()) == null) realm.playerZoneList.put(player.getName(), realm.getZones(realm.everywhere, player));
+		ArrayList<Zone> oldZoneList = realm.playerZoneList.get(player.getName());
 		ArrayList<Zone> newZoneList = realm.getZones(realm.everywhere, player);
 		if (oldZoneList.hashCode() != newZoneList.hashCode()) {
-			for(Zone zone : oldZoneList) if(!newZoneList.contains(zone)) zone.farewell(player);
-			for(Zone zone : newZoneList) if(!oldZoneList.contains(zone)) zone.greet(player);
+			for(Zone zone : oldZoneList) if(!newZoneList.contains(zone)) zone.farewell(player, realm);
+			for(Zone zone : newZoneList) if(!oldZoneList.contains(zone)) zone.greet(player, realm);
 		}
-		realm.playerZoneList.put(player, newZoneList);
+		realm.playerZoneList.put(player.getName(), newZoneList);
 	}
 	
 	private void heal(Player player) {
@@ -77,7 +77,14 @@ public class RealmsListener extends PluginListener {
 			case Sign:
 			case WaterBucket:
 			case WoodDoor:
-				return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
+				if (blockPlaced != null) {
+					return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
+				} else if (blockClicked != null) { 
+					return !realm.permissionCheck(player, Permission.PermType.CREATE, blockClicked);
+				} else {
+					// they didn't click on anything anyway, ignore it.
+					return false;
+				}
 			default:
 				return false;
 			}

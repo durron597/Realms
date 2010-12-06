@@ -1,3 +1,4 @@
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +8,9 @@ import java.lang.Integer;
 public class Realms extends Plugin
 {
 	private final RealmsListener listener = new RealmsListener(this);
-	public static final Logger log = Logger.getLogger("Minecraft");
+	private static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.0.2.2";
+	public static final String version = "v2.0.2.3";
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
 	int pylonType = config.getInt("pylonType", 7);
@@ -22,7 +23,7 @@ public class Realms extends Plugin
 	public List<Zone> zones = new ArrayList<Zone>();
 	public List<Wand> wands = new ArrayList<Wand>();
 	public Hashtable<Zone,ArrayList<Permission>> zonePermissions = new Hashtable<Zone,ArrayList<Permission>>();
-	public Hashtable<Player,ArrayList<Zone>> playerZoneList = new Hashtable<Player,ArrayList<Zone>>();
+	public Hashtable<String,ArrayList<Zone>> playerZoneList = new Hashtable<String,ArrayList<Zone>>();
 	private boolean sanctuaryEnabled = true;
 	private Thread sanctuaryThread = null;
 	
@@ -364,6 +365,14 @@ public class Realms extends Plugin
 	}
 	
 	public Realms() {}
+	
+	public static void log(Level arg0, String arg1, Throwable arg2) {
+		log.log(arg0, "[Realms] " + arg1, arg2);
+	}
+
+	public static void log(Level arg0, String arg1) {
+		log.log(arg0, "[Realms] " + arg1);
+	}
 
 	@Override
 	public void enable() {
@@ -371,18 +380,18 @@ public class Realms extends Plugin
 		wands = new ArrayList<Wand>();
 		data.initialize();
 		if(everywhere == null) {
-			log.info("Realms Mod detected first launch. Creating default permissions.");
+			log(Level.INFO, "Realms Mod detected first launch. Creating default permissions.");
 			everywhere = new Zone(this, "everywhere", null);
 			setPermission("admins", Permission.PermType.ALL, everywhere, true, false);
 			setPermission("everyone", Permission.PermType.DELEGATE, everywhere, false, false);
 			setPermission("everyone", Permission.PermType.ZONING, everywhere, false, false);
 		}
-		log.info("Realms Mod Version " + version + " Enabled.");
+		log(Level.INFO, "Realms Mod Version " + version + " Enabled.");
 	}
 
 	@Override
 	public void disable() {
-		log.info("Realms Mod Disabled.");
+		log(Level.INFO, "Realms Mod Disabled.");
 	}
 
 	@Override
