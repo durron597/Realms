@@ -60,23 +60,27 @@ public class RealmsListener extends PluginListener {
 	
 	@Override
 	public boolean onItemUse(Player player, Block blockPlaced, Block blockClicked, Item item) {
-		switch (item.itemType) {
-		case Bucket:
-		case FlintAndSteel:
-		case GoldRecord:
-		case GreenRecord:
-		case IronDoor:
-		case LavaBucket:
-		case MilkBucket:
-		case Painting:
-		case Saddle:
-		case Sign:
-		case WaterBucket:
-		case WoodDoor:
-			return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
-		default:
-			return false;
+		if (item != null) {
+			switch (item.itemType) {
+			case Bucket:
+			case FlintAndSteel:
+			case GoldRecord:
+			case GreenRecord:
+			case IronDoor:
+			case LavaBucket:
+			case MilkBucket:
+			case Painting:
+			case RedStone:
+			case Saddle:
+			case Sign:
+			case WaterBucket:
+			case WoodDoor:
+				return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
+			default:
+				return false;
+			}
 		}
+		return false;
 	}
 	
 	@Override

@@ -9,7 +9,7 @@ public class Realms extends Plugin
 	private final RealmsListener listener = new RealmsListener(this);
 	public static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.0.2";
+	public static final String version = "v2.0.2.1";
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
 	int pylonType = config.getInt("pylonType", 7);
