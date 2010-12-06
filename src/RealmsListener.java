@@ -71,7 +71,9 @@ public class RealmsListener extends PluginListener {
 			case MilkBucket:
 			case Painting:
 			case RedStone:
+			case Reed: 
 			case Saddle:
+			case Seeds:
 			case Sign:
 			case WaterBucket:
 			case WoodDoor:
