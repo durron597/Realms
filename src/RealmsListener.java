@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class RealmsListener extends PluginListener {
 
@@ -61,6 +62,10 @@ public class RealmsListener extends PluginListener {
 	@Override
 	public boolean onItemUse(Player player, Block blockPlaced, Block blockClicked, Item item) {
 		if (item != null) {
+			if (item.itemType == null) {
+				Realms.log(Level.WARNING, "item wasn't null, but item.ItemType was. getItemId(): " + item.getItemId());
+				return false;
+			}
 			switch (item.itemType) {
 			case Bucket:
 			case FlintAndSteel:
