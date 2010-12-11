@@ -67,8 +67,6 @@ public class RealmsListener extends PluginListener {
 				return false;
 			}
 			switch (item.itemType) {
-			case Bucket:
-			case FlintAndSteel:
 			case GoldRecord:
 			case GreenRecord:
 			case IronDoor:
@@ -86,6 +84,21 @@ public class RealmsListener extends PluginListener {
 					return !realm.permissionCheck(player, Permission.PermType.CREATE, blockPlaced);
 				} else if (blockClicked != null) { 
 					return !realm.permissionCheck(player, Permission.PermType.CREATE, blockClicked);
+				} else {
+					// they didn't click on anything anyway, ignore it.
+					return false;
+				}
+			case Bucket:
+			case WoodHoe:
+			case StoneHoe:
+			case IronHoe:
+			case DiamondHoe:
+			case GoldHoe:
+			case FlintAndSteel:
+				if (blockPlaced != null) {
+					return !realm.permissionCheck(player, Permission.PermType.DESTROY, blockPlaced);
+				} else if (blockClicked != null) { 
+					return !realm.permissionCheck(player, Permission.PermType.DESTROY, blockClicked);
 				} else {
 					// they didn't click on anything anyway, ignore it.
 					return false;
