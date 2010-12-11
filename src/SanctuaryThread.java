@@ -11,7 +11,7 @@ public class SanctuaryThread implements Runnable {
 	}
 
 	public void run() {
-		while (realm.isSanctuaryEnabled()) {
+		while (realm.isEnabled()) {
 			try {
 				Thread.sleep(this.sanctuaryTimeout);
 			} catch (Exception localException1) {
