@@ -1,5 +1,4 @@
-import java.awt.Polygon;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
 import java.io.IOException;
@@ -9,14 +8,16 @@ import java.lang.Math;
 public class PolygonArea {
 	private Realms realm;
 	private Zone zone;
-	private ArrayList<Point> vertices = new ArrayList<Point>();
-	private ArrayList<Point> workingVertices = new ArrayList<Point>();
-	private Polygon polygon = new Polygon();
+	private LinkedList<Point> vertices = new LinkedList<Point>();
+	private LinkedList<Point> workingVertices = new LinkedList<Point>();
 	private int ceiling;
 	private int floor;
 	private int workingCeiling;
 	private int workingFloor;
 	private String mode = "saved";
+
+	private Point centroid = null;
+	private double radius = 0;
 
 	// Normal Constructor
 	public PolygonArea(Realms realm, Zone zone) {
@@ -36,8 +37,10 @@ public class PolygonArea {
 		this.floor = Integer.parseInt(split[2]);
 		for(int i = 3; i < split.length; i += 3)
 			vertices.add(new Point(Integer.parseInt(split[i]),Integer.parseInt(split[i+1]),Integer.parseInt(split[i+2])));
-		this.polygon = toPolygon(vertices);
 		zone.setPolygon(this);
+
+		centroid = calculateCentroid(vertices);
+		radius = calculateRadius(vertices, centroid);
 	}
 
 	public String toString() {
@@ -63,12 +66,16 @@ public class PolygonArea {
 	/*
 	 * Accessor Methods
 	 */
-	public Polygon getPolygon() {return polygon;}
 	public Zone getZone() {return zone;}
 	public List<Point> getVertices() {return vertices;}
-	public boolean isEmpty() {return polygon == null || polygon.npoints < 3;}
+	public Point getCentroid() { return centroid;}
+	public double getRadius() { return radius; }
 	public int getArea() {return calculateArea(vertices);}
 	public String getMode() {return mode;}
+
+	public boolean isEmpty() {
+		return vertices.size() < 3;
+	}
 
 	/*
 	 * Mutator Methods
@@ -81,20 +88,46 @@ public class PolygonArea {
 	}
 
 	public void save() {
-		vertices = new ArrayList<Point>(workingVertices);
-		workingVertices = new ArrayList<Point>();
-		polygon = toPolygon(vertices);
+		vertices = new LinkedList<Point>(workingVertices);
+		workingVertices = new LinkedList<Point>();
 		floor = workingFloor;
 		ceiling = workingCeiling;
 		this.mode = "saved";
 		realm.data.modifyFileLine(RealmsData.polygonFile, zone.getName() + ",", this.toString(), false);
+		
+		centroid = calculateCentroid(vertices);
+		radius = calculateRadius(vertices, centroid);
+	}
+
+	public static Point calculateCentroid(List<Point> points) {
+		double x = 0;
+		double z = 0;
+
+		for (Point p : points) {
+			x += p.x;
+			z += p.z;
+		}
+
+		return new Point((int) Math.floor(x / points.size()), 64, (int) Math.floor(z / points.size()));
+	}
+
+	public static double calculateRadius(List<Point> points, Point c) {
+		double max = 0;
+
+		for (Point p : points) {
+			double distance = c.distance2D(p);
+
+			if (distance > max) max = distance;
+		}
+
+		return max;
 	}
 
 	public List<Point> edit() {
 		this.mode = "edit";
 		workingFloor = floor;
 		workingCeiling = ceiling;
-		workingVertices = new ArrayList<Point>(vertices);
+		workingVertices = new LinkedList<Point>(vertices);
 		return workingVertices;
 	}
 
@@ -119,24 +152,79 @@ public class PolygonArea {
 
 	public boolean contains(Player player) {
 		Point p = new Point((int)Math.floor(player.getLocation().x), (int)Math.floor(player.getLocation().y), (int)Math.floor(player.getLocation().z));
-		return this.contains(p);
+		return this.contains(p, true);
 	}
 
 	public boolean contains(Block block) {
 		Point p = new Point(block.getX(), block.getY(), block.getZ());
-		return this.contains(p);
+		return this.contains(p, true);
 	}
 
-	public boolean contains(Point p) {
-		if(polygon.contains(p.x, p.z) && (p.y >= floor) && (p.y <= ceiling)) return true;
-		// Check if the point is on any of the lines
-		return false;
+	
+	/***************************************************************************
+	 *   INPOLY.C                                                              *
+	 *                                                                         *
+	 *   Copyright (c) 1995-1996 Galacticomm, Inc.  Freeware source code.      *
+	 *                                                                         *
+	 *   http://www.visibone.com/inpoly/inpoly.c                               *
+	 *                                                                         *
+	 *                                       6/19/95 - Bob Stein & Craig Yap   *
+	 *                                       stein@visibone.com                *
+	 *                                       craig@cse.fau.edu                 *
+	 ***************************************************************************/
+	public static boolean contains (List<Point> points, Point p, int floor, int ceiling) {
+		Point oldPoint;
+		int x1,z1;
+		int x2,z2;
+		boolean inside = false;
+
+		if (p.y >= ceiling || p.y <= floor) return false;
+		if (points == null) return false;
+		if (points.size() < 3) return false;
+
+		oldPoint = points.get(points.size() - 1);
+		for (Point newPoint : points) {
+			if (newPoint.x > oldPoint.x) {
+				x1 = oldPoint.x;
+				x2 = newPoint.x;
+				z1 = oldPoint.z;
+				z2 = newPoint.z;
+			} else {
+				x1 = newPoint.x;
+				x2 = oldPoint.x;
+				z1 = newPoint.z;
+				z2 = oldPoint.z;
+			}
+			
+			
+//			if (x1 == 40 && p.x == 40) Realms.log(Level.INFO, String.format("(%d,%d),(%d,%d),(%d,%d),%d", x1,z1,p.x,p.z,x2,z2,determinant));
+			
+			if ((x1 <= p.x && p.x <= x2) && (Math.min(z1,z2) <= p.z && p.z <= Math.max(z1, z2))) { /* edges */
+				int determinant = (x1 * (p.z - z2)) + (p.x * (z2 - z1)) + (x2 * (z1 - p.z));
+				if (determinant == 0) return true; 
+			}
+			if ((newPoint.x < p.x) == (p.x <= oldPoint.x)         /* edge "open" at left end */
+					&& (p.z - z1)*(x2 - x1)
+					< (z2 - z1)*(p.x - x1)) {
+				inside=!inside;
+			}
+			oldPoint = newPoint;
+		}
+		return inside;
+	}
+
+	public boolean contains(Point p, boolean checkRadius) {
+		if (this.centroid == null) return false;
+		
+		if (checkRadius) {
+			if (this.centroid.distance2D(p) > this.radius) return false;
+		}
+		return contains(vertices, p, this.floor, this.ceiling);
 	}
 
 	public boolean workingVerticesContain(PolygonArea polygonArea) {
-		Polygon poly = toPolygon(workingVertices);
 		for(Point p : polygonArea.getVertices())
-			if(!poly.contains(p.x, p.z) || !(workingFloor <= p.y) || !(p.y <= workingCeiling)) return false;
+			if(!contains(workingVertices, p, this.workingFloor, this.workingCeiling)) return false;
 		return true;
 	}
 
@@ -148,8 +236,8 @@ public class PolygonArea {
 
 	// Adds the vertex to the working list
 	// Returns a list of removed vertices
-	public List<Point> addVertex(Block block) {
-		List<Point> removed = new ArrayList<Point>();
+	public List<Point> addVertex(Block block, Player player) {
+		List<Point> removed = new LinkedList<Point>();
 		Point newVertex = new Point(block.getX(), block.getY(), block.getZ());
 
 		// Case #1: The vertex list has less than three points
@@ -162,7 +250,7 @@ public class PolygonArea {
 		// Case #2: Adding the vertex to the end of the working vertices list creates a valid polygon
 		// Just add the point to the end of the working vertices list
 		workingVertices.add(newVertex);
-		if(validPolygon(null)) {
+		if(validPolygon(player)) {
 			return removed;
 		}
 
@@ -203,7 +291,13 @@ public class PolygonArea {
 		return removed;
 	}
 
-	// Tests is a new vertex is valid
+	/**
+	 * Tests is a new vertex is valid
+	 * 
+	 * @param block 
+	 * @param player
+	 * @return whether the new vertex is valid
+	 */
 	public boolean validVertex(Block block, Player player) {
 		// The vertex must be contained by the parent zone
 		if(!zone.getParent().contains(block)) return !Realms.playerError(player, "Error: Block not contained within " + zone.getParent().getName());
@@ -216,7 +310,12 @@ public class PolygonArea {
 		return true;
 	}
 
-	// Do the working vertices make a valid polygon?
+	/**
+	 * Do the working vertices make a valid polygon?
+	 * 
+	 * @param player
+	 * @return whether the polygon makes a valid polygon
+	 */
 	public boolean validPolygon(Player player) {
 		// A polygon must have a least three sides
 		if(workingVertices.size() < 3) {
@@ -236,17 +335,18 @@ public class PolygonArea {
 		}
 
 		// The polygon must not contain intersecting lines
-		for(Line line1 : getLines(workingVertices)) {
-			for(Line line2 : getLines(workingVertices)) {
-				if(line1.intersects2DIgnorePoints(line2)) return !Realms.playerError(player, "Error: Polygon line intersection!!");
-			}
-		}
+		if (intersects(workingVertices, workingVertices)) return !Realms.playerError(player, "Error: Polygon line intersection!!");
 
 		// All checks passed: vertex is valid
 		return true;
 	}
 
-	// Calculate the area of a polygon defined by a list of points
+	/**
+	 * Calculate the area of a polygon defined by a list of points
+	 * 
+	 * @param points the points to calculate the area from
+	 * @return the 2d area of a polygon
+	 */
 	public static int calculateArea(List<Point> points) {
 		if(points.size() < 3) return 0;
 		int areaCalc = 0;
@@ -259,14 +359,27 @@ public class PolygonArea {
 		return areaCalc;
 	}
 
-	// Calculate the volume of a polygon with a ceiling and floor
+	/**
+	 * Calculate the volume of a polygon with a ceiling and floor
+	 * 
+	 * @param points the points in the polygon
+	 * @param floor
+	 * @param ceiling
+	 * @return The volume of the area
+	 */
 	public static int calculateVolume(List<Point> points, int floor, int ceiling) {
 		int height = ceiling - floor;
 		return calculateArea(points) * height;
 	}
 
-	// Tests two lists of points for polygon intersection
-	// Should probably use ANY-SEGMENTS-INTERSECT for performance, not a big deal tho
+	/**
+	 * Tests two lists of points for polygon intersection
+	 * Should probably use ANY-SEGMENTS-INTERSECT for performance, not a big deal tho
+	 * 
+	 * @param list1 the first list of points
+	 * @param list2 the second list of points
+	 * @return whether the points intersect
+	 */
 	private static boolean intersects(List<Point> list1, List<Point> list2) {
 		List<Line> lines1 = getLines(list1);
 		List<Line> lines2 = getLines(list2);
@@ -278,9 +391,14 @@ public class PolygonArea {
 		return false;
 	}
 
-	// Return all lines made by the list of points
+	/**
+	 * Gets a list of lines made by the points
+	 * 
+	 * @param points the points to get the lines from
+	 * @return all lines made by the list of points
+	 */
 	private static List<Line> getLines(List<Point> points) {
-		List<Line> results = new ArrayList<Line>();
+		List<Line> results = new LinkedList<Line>();
 		if(points.size() < 2) return results;
 		Point last = points.get(points.size() - 1);
 		for (Point p : points) {
@@ -288,11 +406,5 @@ public class PolygonArea {
 			last = p;
 		}
 		return results;
-	}
-
-	private static Polygon toPolygon(List<Point> points) {
-		Polygon poly = new Polygon();
-		for(Point p : points) poly.addPoint(p.x,p.z);
-		return poly;
 	}
 }
