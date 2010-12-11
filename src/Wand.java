@@ -81,6 +81,15 @@ public class Wand {
 			player.sendMessage("Your wand has been reset.");
 			return true;
 		}
+		
+		// Reset operation
+		if(command[1].equalsIgnoreCase("reset")) {
+			String zoneName = workingPolygon.getZone().getName();
+			this.reset();
+			player.sendMessage("All pylons removed.");
+			
+			command = new String[]{"/wand", "edit", zoneName};
+		}
 
 		// Save vertices
 		if (command[1].equalsIgnoreCase("save")) {
@@ -94,6 +103,109 @@ public class Wand {
 			return Realms.playerError(player, "Error: You are not currently editing a zone");
 		}
 
+		// Show vertices
+		if (command[1].equalsIgnoreCase("show")) {
+			int x1, z1, x2, z2;
+			PolygonArea thePolygon = null;
+			
+			switch (command.length) {
+			case 2:
+				if (!mode.equalsIgnoreCase("polygon")) return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
+				else
+					thePolygon = workingPolygon;
+			case 3:
+				if (thePolygon == null) {
+					Zone zone = realm.getZoneByName(command[2]);
+					if(zone == null) return Realms.playerError(player, "Zone '" + command[2] + "' could not be found");
+					thePolygon = zone.getPolygon();
+				}
+				int radius = (int) Math.ceil(thePolygon.getRadius());
+				int fudge = (int) Math.floor(radius / 10);
+				x1 = thePolygon.getCentroid().x - radius - fudge;
+				x2 = thePolygon.getCentroid().x + radius + fudge;
+				z1 = thePolygon.getCentroid().z - radius - fudge;
+				z2 = thePolygon.getCentroid().z + radius + fudge;
+				
+				player.sendMessage("Using bounding coords of: (" + x1 + "," + z1 + ") (" + x2 + "," + z2 + ")");
+				
+				break;
+			case 4:
+				if (mode.equalsIgnoreCase("default")) return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
+				else thePolygon = workingPolygon;
+			default:
+				try {
+					String[] coord1 = command[2].split(",");
+					String[] coord2 = command[3].split(",");
+					if (coord1.length < 2 || coord2.length < 2) return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
+					x1 = Integer.parseInt(coord1[0]);
+					z1 = Integer.parseInt(coord1[1]);
+					x2 = Integer.parseInt(coord2[0]);
+					z2 = Integer.parseInt(coord2[1]);
+				} catch (NumberFormatException e) {
+					return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
+				}
+				if (thePolygon == null) {
+					Zone zone = realm.getZoneByName(command[4]);
+					if(zone == null) return Realms.playerError(player, "Zone '" + command[4] + "' could not be found");
+					thePolygon = zone.getPolygon();
+				}
+				break;
+			}
+			
+			int scalex = (int) Math.floor((Math.abs(x1 - x2) - 25)/50.) + 1;
+			if (scalex < 1) scalex = 1;
+			int countx = (int) Math.ceil(Math.abs(x1 - x2) / scalex);
+			int scalez = (int) Math.floor((Math.abs(z1 - z2) - 7)/14.) + 1;
+			if (scalez < 1) scalez = 1;
+			int countz = (int) Math.ceil(Math.abs(z1- z2) / scalez);
+			
+			if (scalex > 1) player.sendMessage("Using x scaling factor of " + scalex);
+			if (scalez > 1) player.sendMessage("Using z scaling factor of " + scalez);
+			
+			int i, j = 0;
+			
+			for (i = -1; i < countz; i++) {
+				boolean color = false;
+				boolean first = false;
+				
+				int zcoord = i * scalez + z1 + (int) Math.floor(scalez / 2);	
+				StringBuilder messageString = new StringBuilder("§2");
+				
+				if (i == -1) messageString.append(" ");
+				else messageString.append(Math.abs(zcoord) % 10);
+				
+				for (j = 0; j < countx; j++) {
+					
+					int xcoord = j * scalex + x1 + (int) Math.floor(scalex / 2);
+					
+					if (i == -1) {
+						messageString.append(Math.abs(xcoord) % 10);
+						continue;
+					}
+					
+					if (PolygonArea.contains(thePolygon.getVertices(), new Point(xcoord, 64, zcoord), 0, 128)) { 
+						if (!color || !first) {
+							messageString.append("§8");
+							color = true;
+							first = true;
+						}
+						messageString.append("X");
+					} else {
+						if (color || !first) {
+							messageString.append("§f");
+							color = false;
+							first = true;
+						}
+						messageString.append("-");
+					}
+				}
+				
+				player.sendMessage(messageString.toString());
+			}
+			
+			return true;
+		}
+		
 		// Edit zone
 		if(command[1].equalsIgnoreCase("edit")) {
 
@@ -221,7 +333,7 @@ public class Wand {
 			// The vertex must be valid
 			if(!workingPolygon.validVertex(block, player)) return true;
 
-			List<Point> removedVertices = workingPolygon.addVertex(block);
+			List<Point> removedVertices = workingPolygon.addVertex(block, player);
 			for(Point p : removedVertices) {
 				player.sendMessage("Removing vertex at " + p.x + "," + p.y + "," + p.z);
 				removePylon(p.x, p.z);
