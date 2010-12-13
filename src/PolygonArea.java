@@ -178,7 +178,7 @@ public class PolygonArea {
 		int x2,z2;
 		boolean inside = false;
 
-		if (p.y >= ceiling || p.y <= floor) return false;
+		if (p.y > ceiling || p.y < floor) return false;
 		if (points == null) return false;
 		if (points.size() < 3) return false;
 
