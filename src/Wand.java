@@ -85,7 +85,9 @@ public class Wand {
 		// Reset operation
 		if(command[1].equalsIgnoreCase("reset")) {
 			String zoneName = workingPolygon.getZone().getName();
-			this.reset();
+			this.resetAllSavedBlocks();
+			workingPolygon.getVertices().clear();
+			workingPolygon.save();
 			player.sendMessage("All pylons removed.");
 			
 			command = new String[]{"/wand", "edit", zoneName};
@@ -94,11 +96,18 @@ public class Wand {
 		// Save vertices
 		if (command[1].equalsIgnoreCase("save")) {
 			if(!mode.equalsIgnoreCase("default")) {
-				if(!workingPolygon.validPolygon(player)) return true;
-				workingPolygon.save();
-				reset();
-				player.sendMessage("Zone complete! Wand back in getInfo mode.");
-				return true;
+				if (workingPolygon.isEmpty()) {
+					player.sendMessage("Zone saved with no pylons. Wand back in getInfo mode.");
+					workingPolygon.save();
+					reset();
+					return true;
+				} else {
+					if(!workingPolygon.validPolygon(player)) return true;
+					workingPolygon.save();
+					reset();
+					player.sendMessage("Zone complete! Wand back in getInfo mode.");
+					return true;
+				}
 			}
 			return Realms.playerError(player, "Error: You are not currently editing a zone");
 		}
@@ -152,7 +161,7 @@ public class Wand {
 				break;
 			}
 			
-			int scalex = (int) Math.floor((Math.abs(x1 - x2) - 25)/50.) + 1;
+			int scalex = (int) Math.floor((Math.abs(x1 - x2) - 20)/40.) + 1;
 			if (scalex < 1) scalex = 1;
 			int countx = (int) Math.ceil(Math.abs(x1 - x2) / scalex);
 			int scalez = (int) Math.floor((Math.abs(z1 - z2) - 7)/14.) + 1;

@@ -88,15 +88,26 @@ public class PolygonArea {
 	}
 
 	public void save() {
-		vertices = new LinkedList<Point>(workingVertices);
-		workingVertices = new LinkedList<Point>();
-		floor = workingFloor;
-		ceiling = workingCeiling;
-		this.mode = "saved";
-		realm.data.modifyFileLine(RealmsData.polygonFile, zone.getName() + ",", this.toString(), false);
-		
-		centroid = calculateCentroid(vertices);
-		radius = calculateRadius(vertices, centroid);
+		if (workingVertices.isEmpty()) {
+			vertices = new LinkedList<Point>();
+			floor = 0;
+			ceiling = 1000;
+			this.mode = "saved";
+			realm.data.modifyFileLine(RealmsData.polygonFile, zone.getName() + ",", null, true);
+			
+			centroid = null;
+			radius = 0;
+		} else {
+			vertices = new LinkedList<Point>(workingVertices);
+			workingVertices = new LinkedList<Point>();
+			floor = workingFloor;
+			ceiling = workingCeiling;
+			this.mode = "saved";
+			realm.data.modifyFileLine(RealmsData.polygonFile, zone.getName() + ",", this.toString(), false);
+			
+			centroid = calculateCentroid(vertices);
+			radius = calculateRadius(vertices, centroid);
+		}
 	}
 
 	public static Point calculateCentroid(List<Point> points) {
