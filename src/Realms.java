@@ -10,7 +10,8 @@ public class Realms extends Plugin
 	private final RealmsListener listener = new RealmsListener(this);
 	private static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.1.0.1";
+	public static final String version = "v2.1.0.2";
+	
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
 	int pylonType = config.getInt("pylonType", 7);
@@ -18,6 +19,8 @@ public class Realms extends Plugin
 	int sanctuaryTimeout = config.getInt("sanctuaryTimeout", 1);
 	boolean grantbyDefault = config.getBoolean("grantbyDefault", true);
 	boolean grantOverrulesDeny = config.getBoolean("grantOverrulesDeny", true);
+	boolean debug = config.getBoolean("debug", false);
+	
 	Server server = etc.getServer();
 	public Zone everywhere;
 	public List<Zone> zones = new ArrayList<Zone>();
