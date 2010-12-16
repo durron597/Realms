@@ -44,6 +44,9 @@ public class Realms extends Plugin
 
 	@Override
 	public void enable() {
+		etc.getInstance().addCommand("/realms", "Configures your realms zones");
+		etc.getInstance().addCommand("/wand", "Works with the shape and location of realms zones");
+		
 		zones = new ArrayList<Zone>();
 		wands = new ArrayList<Wand>();
 		data.initialize();
@@ -63,11 +66,13 @@ public class Realms extends Plugin
 	@Override
 	public void disable() {
 		log(Level.INFO, "Realms Mod Disabled.");
+		
+		etc.getInstance().removeCommand("/realms");
+		etc.getInstance().removeCommand("/wand");
 	}
 
 	@Override
 	public void initialize() {
-		//Here we add the hook we're going to use. In this case it's the arm swing event.
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_PLACE, listener, this, RealmsListener.Priority.HIGH);
 		etc.getLoader().addListener(PluginLoader.Hook.BLOCK_RIGHTCLICKED, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.ITEM_USE, listener, this, RealmsListener.Priority.HIGH);
