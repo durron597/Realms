@@ -51,7 +51,7 @@ public class RealmsListener extends PluginListener {
 	
 	@Override
 	public boolean onBlockPlace(Player player, Block blockPlaced, Block blockClicked, Item itemInHand) {
-		if (realm.debug) Realms.log(Level.INFO, String.format("[DEBUG] onBlockPlace: Player-%s; bP-%s,%d,%d,%d; bC-%s,%d,%d,%d; Item-%s", player.getName(),
+		realm.log(Level.INFO, String.format("[DEBUG] onBlockPlace: Player-%s; bP-%s,%d,%d,%d; bC-%s,%d,%d,%d; Item-%s", player.getName(),
 				blockPlaced.blockType.toString(), blockPlaced.getX(), blockPlaced.getY(), blockPlaced.getZ(),
 				blockClicked.blockType.toString(), blockClicked.getX(), blockClicked.getY(), blockClicked.getZ(),
 				itemInHand.itemType.toString()));
@@ -65,13 +65,13 @@ public class RealmsListener extends PluginListener {
 	
 	@Override
 	public boolean onItemUse(Player player, Block blockPlaced, Block blockClicked, Item item) {
-		if (realm.debug) Realms.log(Level.INFO, String.format("[DEBUG] onItemUse: Player-%s; bP-%s,%d,%d,%d; bC-%s,%d,%d,%d; Item-%s", player.getName(),
+		realm.log(Level.INFO, String.format("[DEBUG] onItemUse: Player-%s; bP-%s,%d,%d,%d; bC-%s,%d,%d,%d; Item-%s", player.getName(),
 				blockPlaced.blockType.toString(), blockPlaced.getX(), blockPlaced.getY(), blockPlaced.getZ(),
 				blockClicked.blockType.toString(), blockClicked.getX(), blockClicked.getY(), blockClicked.getZ(),
 				item.itemType.toString()));
 		if (item != null) {
 			if (item.itemType == null) {
-				Realms.log(Level.WARNING, "item wasn't null, but item.ItemType was. getItemId(): " + item.getItemId());
+				realm.log(Level.WARNING, "item wasn't null, but item.ItemType was. getItemId(): " + item.getItemId());
 				return false;
 			}
 			switch (item.itemType) {
@@ -120,7 +120,7 @@ public class RealmsListener extends PluginListener {
 	
 	@Override
 	public boolean onBlockDestroy(Player player, Block block) {
-		if (realm.debug) Realms.log(Level.INFO, String.format("[DEBUG] onBlockDestroy: Player-%s; Block-%s,%d,%d,%d", player.getName(),
+		realm.log(Level.INFO, String.format("[DEBUG] onBlockDestroy: Player-%s; Block-%s,%d,%d,%d", player.getName(),
 				block.blockType.toString(), block.getX(), block.getY(), block.getZ()));
 		return !realm.permissionCheck(player, Permission.PermType.DESTROY, block);
 	}
@@ -167,7 +167,7 @@ public class RealmsListener extends PluginListener {
 	@Override
 	public boolean onExplode(Block block) {
 		if ( block.getStatus()==2 ){
-			Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(block.getX()), (int) Math.floor(block.getY()), (int) Math.floor(block.getZ())));
+			Zone zone = realm.getZone(realm.everywhere, block);
 			return !zone.getCreeper();
 		}
 		return false;
