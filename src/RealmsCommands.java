@@ -2,7 +2,7 @@ public enum RealmsCommands {
 	GIVEMEPERMISSION ("givemepermission", "") {
 		@Override
 		public boolean execute(Player player, String[] command, Realms theRealms) {
-			if(player.isInGroup("admins")) theRealms.setPermission(player.getName(), Permission.PermType.ALL, theRealms.everywhere, true, false);
+			if(player.isAdmin()) theRealms.setPermission(player.getName(), Permission.PermType.ALL, theRealms.everywhere, true, false);
 			player.sendMessage("Granted you all permissions to zone 'everywhere'");
 			return true;
 		}
