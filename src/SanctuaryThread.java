@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.logging.Level;
 
 public class SanctuaryThread implements Runnable {
 	private Realms realm = null;
@@ -11,7 +12,7 @@ public class SanctuaryThread implements Runnable {
 	}
 
 	public void run() {
-		while (realm.isEnabled()) {
+		while (realm != null && realm.isEnabled()) {
 			try {
 				Thread.sleep(this.sanctuaryTimeout);
 			} catch (Exception localException1) {
@@ -19,11 +20,16 @@ public class SanctuaryThread implements Runnable {
 			}
 			
 			List<Mob> mobList = realm.server.getMobList();
+			realm.log(Level.INFO, "There are currently " + mobList.size() + " mobs on your server.");
 			for (Mob theMob : mobList) {
 				if (theMob.isMob()) {
-					Zone myZone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(theMob.getX()), (int) Math.floor(theMob.getY()), (int) Math.floor(theMob.getZ())));
+					Block mobLocation = realm.server.getBlockAt((int) Math.floor(theMob.getX()), (int) Math.floor(theMob.getY()), (int) Math.floor(theMob.getZ()));
+					Zone myZone = realm.getZone(realm.everywhere, mobLocation);
 					
-					if (myZone.getSanctuary()) killMob(theMob);
+					if (myZone.getSanctuary()) {
+						realm.log(Level.INFO, "Trying to kill mob type " + theMob.getName() + " at location " + mobLocation.getX() + "," + mobLocation.getY() + "," + mobLocation.getZ());
+						killMob(theMob);
+					}
 					else if (theMob.getName().equals("Creeper") && !myZone.getCreeper()) killMob(theMob);
 				}
 			}
