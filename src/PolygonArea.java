@@ -68,6 +68,8 @@ public class PolygonArea {
 	 */
 	public Zone getZone() {return zone;}
 	public List<Point> getVertices() {return vertices;}
+	public int getCeiling() {return ceiling;}
+	public int getFloor() {return floor;}
 	public Point getCentroid() { return centroid;}
 	public double getRadius() { return radius; }
 	public int getArea() {return calculateArea(vertices);}
@@ -335,7 +337,8 @@ public class PolygonArea {
 		// The polygon must not intersect any other sibling zones
 		for(Zone sibling : zone.getParent().getChildren()) {
 			if(sibling != zone && intersects(sibling.getPolygon().getVertices(), workingVertices)) {
-				return !Realms.playerError(player, "Error: A block that would be enclosed by this polygon is already claimed by another zone.");
+				if (sibling.getPolygon().getFloor() <= getCeiling() || sibling.getPolygon().getCeiling() >= getFloor())
+					return !Realms.playerError(player, "Error: A block that would be enclosed by this polygon is already claimed by another zone.");
 			}
 		}
 		// The polygon must contain all zone children
@@ -385,7 +388,7 @@ public class PolygonArea {
 
 	/**
 	 * Tests two lists of points for polygon intersection
-	 * Should probably use ANY-SEGMENTS-INTERSECT for performance, not a big deal tho
+	 * Should probably use ANY-SEGMENTS-INTERSECT for performance, not a big deal though
 	 * 
 	 * @param list1 the first list of points
 	 * @param list2 the second list of points
@@ -401,6 +404,16 @@ public class PolygonArea {
 		}
 		return false;
 	}
+//	private static boolean intersects(List<Point> list1, List<Point> list2) {
+//		List<Line> lines1 = getLines(list1);
+//		List<Line> lines2 = getLines(list2);
+//		for(Line line1 : lines1) {
+//			for(Line line2 : lines2) {
+//				if(line1.intersects2DIgnorePoints(line2)) return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	/**
 	 * Gets a list of lines made by the points
