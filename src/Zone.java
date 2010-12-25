@@ -57,7 +57,7 @@ public class Zone {
 		realm.zones.add(this);
 		realm.zonePermissions.put(this, new ArrayList<Permission>());
 		this.saveZoneToFile();
-		Realms.log(Level.INFO, "Zone created: " + name);
+		realm.log(Level.INFO, "Zone created: " + name);
 	}
 
 	// CSV File Constructor
