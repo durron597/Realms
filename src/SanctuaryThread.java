@@ -6,12 +6,13 @@ public class SanctuaryThread implements Runnable {
 	private long sanctuaryTimeout = 1000L;
 	
 
-	public SanctuaryThread(Realms realm, int SanctuaryTimeout) {
+	public SanctuaryThread(Realms realm, int sanctuaryTimeout) {
 		this.realm = realm;
-		this.sanctuaryTimeout = this.sanctuaryTimeout * 1000L;
+		this.sanctuaryTimeout = sanctuaryTimeout * 1000L;
 	}
 
 	public void run() {
+		realm.log(Level.WARNING, "Entering Sanctuary Thread!");
 		while (realm != null && realm.isEnabled()) {
 			try {
 				Thread.sleep(this.sanctuaryTimeout);
@@ -19,6 +20,7 @@ public class SanctuaryThread implements Runnable {
 				break;
 			}
 			
+//			realm.log(Level.INFO, "This happens before getMobList!");
 			List<Mob> mobList = realm.server.getMobList();
 			realm.log(Level.INFO, "There are currently " + mobList.size() + " mobs on your server.");
 			for (Mob theMob : mobList) {
@@ -34,6 +36,7 @@ public class SanctuaryThread implements Runnable {
 				}
 			}
 		}
+		realm.log(Level.WARNING, "Exiting Sanctuary Thread!");
 	}
 	
 	private void killMob (Mob theMob) {
