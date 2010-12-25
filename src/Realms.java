@@ -10,7 +10,7 @@ public class Realms extends Plugin
 	private final RealmsListener listener = new RealmsListener(this);
 	private static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.1.0.2";
+	public static final String version = "v2.2";
 	
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
@@ -34,12 +34,12 @@ public class Realms extends Plugin
 
 	public Realms() {}
 	
-	public static void log(Level arg0, String arg1, Throwable arg2) {
-		log.log(arg0, "[Realms] " + arg1, arg2);
+	public void log(Level arg0, String arg1, Throwable arg2) {
+		if (debug || !arg0.equals(Level.INFO)) log.log(arg0, "[" + name + "] " + arg1, arg2);
 	}
 
-	public static void log(Level arg0, String arg1) {
-		log.log(arg0, "[Realms] " + arg1);
+	public void log(Level arg0, String arg1) {
+		if (debug || !arg0.equals(Level.INFO)) log.log(arg0, "[" + name + "] " + arg1);
 	}
 
 	@Override
@@ -50,14 +50,22 @@ public class Realms extends Plugin
 		zones = new ArrayList<Zone>();
 		wands = new ArrayList<Wand>();
 		data.initialize();
+		initProperties();
 		if(everywhere == null) {
-			log(Level.INFO, "Realms Mod detected first launch. Creating default permissions.");
+			log.log(Level.INFO, "[" + name + "] Mod detected first launch. Creating default permissions.");
 			everywhere = new Zone(this, "everywhere", null);
-			setPermission("admins", Permission.PermType.ALL, everywhere, true, false);
+			String adminName = "admins";
+			for (String groupName : new String[]{"admins", "admin", "mods", "mod", "moderators", "moderator", "su", "superuser"} ) {
+				if(etc.getDataSource().getGroup(groupName).Administrator) {
+					adminName = groupName;
+					break;
+				}
+			}
+			setPermission("g:" + adminName, Permission.PermType.ALL, everywhere, true, false);
 			setPermission("everyone", Permission.PermType.DELEGATE, everywhere, false, false);
 			setPermission("everyone", Permission.PermType.ZONING, everywhere, false, false);
 		}
-		log(Level.INFO, "Realms Mod Version " + version + " Enabled.");
+		log.log(Level.INFO, "[" + name + "] Mod Version " + version + " Enabled.");
 		
 		sanctuaryThread = new Thread(new SanctuaryThread(this, sanctuaryTimeout));
 		sanctuaryThread.start();
@@ -84,6 +92,17 @@ public class Realms extends Plugin
 		etc.getLoader().addListener(PluginLoader.Hook.DAMAGE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.EXPLODE, listener, this, RealmsListener.Priority.MEDIUM);
 		etc.getLoader().addListener(PluginLoader.Hook.MOB_SPAWN, listener, this, RealmsListener.Priority.MEDIUM);
+	}
+	
+	private void initProperties() {
+		config = new PropertiesFile("Realms.txt");
+		wandItem = config.getInt("wandItem", 280);
+		pylonType = config.getInt("pylonType", 7);
+		pylonHeight = config.getInt("pylonHeight", 3);
+		sanctuaryTimeout = config.getInt("sanctuaryTimeout", 1);
+		grantbyDefault = config.getBoolean("grantbyDefault", true);
+		grantOverrulesDeny = config.getBoolean("grantOverrulesDeny", true);
+		debug = config.getBoolean("debug", false);
 	}
 
 
