@@ -51,7 +51,7 @@ public class RealmsData {
 		try {
 			if (!storage.exists()) storage.mkdir();
 		} catch (Exception e) {
-			Realms.log(Level.SEVERE, "Exception while trying to create realms directory: ", e);
+			realm.log(Level.SEVERE, "Exception while trying to create realms directory: ", e);
 		}
 		
 /*		File plugins = new File("plugins");
@@ -83,21 +83,21 @@ public class RealmsData {
 				oldSubDirFile = new File(oldSubDir, fileName);
 			try {
 				if(oldSubDirFile != null && oldSubDirFile.exists()) {
-					Realms.log(Level.INFO, "Moving file from " + oldSubDirFile + " to " + new File(storage, fileName));
+					realm.log(Level.INFO, "Moving file from " + oldSubDirFile + " to " + new File(storage, fileName));
 					oldSubDirFile.renameTo(new File(storage, fileName));
 				} else if(rootFile.exists()) {
-					Realms.log(Level.INFO, "Moving file from " + rootFile + " to " + new File(storage, fileName));
+					realm.log(Level.INFO, "Moving file from " + rootFile + " to " + new File(storage, fileName));
 					rootFile.renameTo(new File(storage, fileName));
 				}
 			} catch (Exception e) {
-				Realms.log(Level.SEVERE, "Exception while trying to move file from " + fileName + " to " + new File(storage, fileName), e);
+				realm.log(Level.SEVERE, "Exception while trying to move file from " + fileName + " to " + new File(storage, fileName), e);
 			}
 		}
 		
 		try {
 			if (oldSubDir.exists()) oldSubDir.delete();
 		} catch (Exception e) {
-			Realms.log(Level.SEVERE, "Exception while trying to delete Realms Files subdirectory", e);
+			realm.log(Level.SEVERE, "Exception while trying to delete Realms Files subdirectory", e);
 		}
 	}
 
@@ -113,7 +113,7 @@ public class RealmsData {
 				bw.close();
 			}
 		} catch (Exception e) {
-			Realms.log(Level.SEVERE, "Exception while creating new file at " + new File(storage,location), e);
+			realm.log(Level.SEVERE, "Exception while creating new file at " + new File(storage,location), e);
 		}
 
 		try {
@@ -129,7 +129,7 @@ public class RealmsData {
 			}
 			scanner.close();
 		} catch (Exception e) {
-			Realms.log(Level.SEVERE, "Exception while reading " + new File(storage,location) + " (Are you sure you formatted it correctly?)", e);
+			realm.log(Level.SEVERE, "Exception while reading " + new File(storage,location) + " (Are you sure you formatted it correctly?)", e);
 		}
 
 		// If we are reading the blockfile, then clear it!
@@ -140,7 +140,7 @@ public class RealmsData {
 				if(!blockFile.delete()) throw new Exception();
 				blockFile.createNewFile();
 			} catch (Exception e) {
-				Realms.log(Level.SEVERE, "Exception while deleting " + new File(storage,location), e);
+				realm.log(Level.SEVERE, "Exception while deleting " + new File(storage,location), e);
 			}
 		}
 	}
@@ -149,7 +149,7 @@ public class RealmsData {
 	public void readBlock(String line) {
 		String[] split = line.split(",");
 		Block block = new Block(Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2]),Integer.parseInt(split[3]));
-		Realms.log(Level.INFO, "Realms: Reseting orphaned block: " + realm.blockToString(block));
+		realm.log(Level.INFO, "Realms: Reseting orphaned block: " + realm.blockToString(block));
 		realm.server.setBlock(block);
 	}
 
@@ -177,7 +177,7 @@ public class RealmsData {
 			bw.newLine();
 			bw.close();
 		} catch (Exception ex) {
-			Realms.log(Level.SEVERE, "Exception while writing new block to " + location, ex);
+			realm.log(Level.SEVERE, "Exception while writing new block to " + location, ex);
 		}
 	}
 
@@ -207,7 +207,7 @@ public class RealmsData {
 			}
 			bw.close();
 		} catch (Exception ex) {
-			Realms.log(Level.SEVERE, "Exception while modifying " + match + " in " + location, ex);
+			realm.log(Level.SEVERE, "Exception while modifying " + match + " in " + location, ex);
 		}
 	}
 } 
