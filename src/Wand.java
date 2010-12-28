@@ -360,8 +360,8 @@ public class Wand {
 			}
 			// Check chests
 			for (int i = 0; i < pylonHeight; i++) {
-				block = realm.server.getBlockAt(block.getX(), block.getY()+1, block.getZ());
-				if (block.blockType.equals(Block.Type.Chest)) return Realms.playerError(player, "You may not place a pylon where there's a chest! Remove it first.");
+				Block testblock = realm.server.getBlockAt(block.getX(), block.getY()+1, block.getZ());
+				if (testblock.blockType.equals(Block.Type.Chest)) return Realms.playerError(player, "You may not place a pylon where there's a chest! Remove it first.");
 			}
 			
 			// The vertex must be valid
