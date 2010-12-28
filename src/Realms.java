@@ -10,7 +10,7 @@ public class Realms extends Plugin
 	private final RealmsListener listener = new RealmsListener(this);
 	private static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.2.0.1";
+	public static final String version = "v2.2.0.2";
 	
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
@@ -69,7 +69,7 @@ public class Realms extends Plugin
 			setPermission("everyone", Permission.PermType.ZONING, everywhere, false, false);
 		}
 		loginfo("[" + name + "] Mod Version " + version + " Enabled.");
-		log(Level.WARNING, ("[DEBUG] Starting with debug enabled! Don't let your logs get bloated!"));
+		if (debug) log(Level.WARNING, ("[DEBUG] Starting with debug enabled! Don't let your logs get bloated!"));
 		
 		sanctuaryThread = new Thread(new SanctuaryThread(this, sanctuaryTimeout));
 		sanctuaryThread.start();
