@@ -337,7 +337,7 @@ public class PolygonArea {
 		// The polygon must not intersect any other sibling zones
 		for(Zone sibling : zone.getParent().getChildren()) {
 			if(sibling != zone && intersects(sibling.getPolygon().getVertices(), workingVertices)) {
-				if (sibling.getPolygon().getFloor() <= getCeiling() || sibling.getPolygon().getCeiling() >= getFloor())
+				if (sibling.getPolygon().getFloor() <= getCeiling() && sibling.getPolygon().getCeiling() >= getFloor())
 					return !Realms.playerError(player, "Error: A block that would be enclosed by this polygon is already claimed by another zone.");
 			}
 		}
