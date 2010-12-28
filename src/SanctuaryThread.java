@@ -14,6 +14,7 @@ public class SanctuaryThread implements Runnable {
 	public void run() {
 		realm.log(Level.WARNING, "Entering Sanctuary Thread!");
 		while (realm != null && realm.isEnabled()) {
+			int i = 0;
 			try {
 				Thread.sleep(this.sanctuaryTimeout);
 			} catch (Exception localException1) {
@@ -22,7 +23,10 @@ public class SanctuaryThread implements Runnable {
 			
 //			realm.log(Level.INFO, "This happens before getMobList!");
 			List<Mob> mobList = realm.server.getMobList();
-			realm.log(Level.INFO, "There are currently " + mobList.size() + " mobs on your server.");
+			i++;
+			if (i == 60) {
+				realm.loginfo("There are currently " + mobList.size() + " mobs on your server.");	
+			}
 			for (Mob theMob : mobList) {
 				if (theMob.isMob()) {
 					Block mobLocation = realm.server.getBlockAt((int) Math.floor(theMob.getX()), (int) Math.floor(theMob.getY()), (int) Math.floor(theMob.getZ()));

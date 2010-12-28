@@ -10,7 +10,7 @@ public class Realms extends Plugin
 	private final RealmsListener listener = new RealmsListener(this);
 	private static final Logger log = Logger.getLogger("Minecraft");
 	public static final String name = "Realms";
-	public static final String version = "v2.2";
+	public static final String version = "v2.2.0.1";
 	
 	private PropertiesFile config = new PropertiesFile("Realms.txt");
 	int wandItem = config.getInt("wandItem", 280);
@@ -27,7 +27,6 @@ public class Realms extends Plugin
 	public List<Wand> wands = new ArrayList<Wand>();
 	public Hashtable<Zone,ArrayList<Permission>> zonePermissions = new Hashtable<Zone,ArrayList<Permission>>();
 	public Hashtable<String,ArrayList<Zone>> playerZoneList = new Hashtable<String,ArrayList<Zone>>();
-	private boolean sanctuaryEnabled = true;
 	private Thread sanctuaryThread = null;
 	
 	RealmsData data = new RealmsData(this);
@@ -42,6 +41,10 @@ public class Realms extends Plugin
 		if (debug || !arg0.equals(Level.INFO)) log.log(arg0, "[" + name + "] " + arg1);
 	}
 
+	public void loginfo(String arg1) {
+		log.log(Level.INFO, "[" + name + "] " + arg1);
+	}
+	
 	@Override
 	public void enable() {
 		etc.getInstance().addCommand("/realms", "Configures your realms zones");
@@ -65,7 +68,8 @@ public class Realms extends Plugin
 			setPermission("everyone", Permission.PermType.DELEGATE, everywhere, false, false);
 			setPermission("everyone", Permission.PermType.ZONING, everywhere, false, false);
 		}
-		log.log(Level.INFO, "[" + name + "] Mod Version " + version + " Enabled.");
+		loginfo("[" + name + "] Mod Version " + version + " Enabled.");
+		log(Level.WARNING, ("[DEBUG] Starting with debug enabled! Don't let your logs get bloated!"));
 		
 		sanctuaryThread = new Thread(new SanctuaryThread(this, sanctuaryTimeout));
 		sanctuaryThread.start();
@@ -73,7 +77,7 @@ public class Realms extends Plugin
 
 	@Override
 	public void disable() {
-		log(Level.INFO, "Realms Mod Disabled.");
+		loginfo("Realms Mod Disabled.");
 		
 		etc.getInstance().removeCommand("/realms");
 		etc.getInstance().removeCommand("/wand");
@@ -239,20 +243,6 @@ public class Realms extends Plugin
 		if(grantOverrulesDeny && p2.getAllowed()) return p2;
 		else if(!grantOverrulesDeny && !p2.getAllowed()) return p2;
 		else return p1;
-	}
-
-	/**
-	 * @param sanctuaryEnabled the sanctuaryEnabled to set
-	 */
-	public void setSanctuaryEnabled(boolean sanctuaryEnabled) {
-		this.sanctuaryEnabled = sanctuaryEnabled;
-	}
-
-	/**
-	 * @return the sanctuaryEnabled
-	 */
-	public boolean isSanctuaryEnabled() {
-		return sanctuaryEnabled;
 	}
 
 	// Overrides previous permission if it existed

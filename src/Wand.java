@@ -128,12 +128,31 @@ public class Wand {
 					if(zone == null) return Realms.playerError(player, "Zone '" + command[2] + "' could not be found");
 					thePolygon = zone.getPolygon();
 				}
-				int radius = (int) Math.ceil(thePolygon.getRadius());
-				int fudge = (int) Math.floor(radius / 10);
-				x1 = thePolygon.getCentroid().x - radius - fudge;
-				x2 = thePolygon.getCentroid().x + radius + fudge;
-				z1 = thePolygon.getCentroid().z - radius - fudge;
-				z2 = thePolygon.getCentroid().z + radius + fudge;
+				
+				if (thePolygon == null || thePolygon.getVertices().isEmpty()) return Realms.playerError(player, "The zone doesn't have any vertices!");
+				
+				x1 = thePolygon.getVertices().get(0).x;
+				x2 = thePolygon.getVertices().get(0).x;
+				z1 = thePolygon.getVertices().get(0).z;
+				z2 = thePolygon.getVertices().get(0).z;
+				for (Point p : thePolygon.getVertices()) {
+					if (p.x < x1) x1 = p.x;
+					if (p.x > x2) x2 = p.x;
+					if (p.z < z1) z1 = p.z;
+					if (p.z > z2) z2 = p.z;
+				}
+				
+				x1 -= 2;
+				x2 += 2;
+				z1 -= 2;
+				z2 += 2;
+				
+//				int radius = (int) Math.ceil(thePolygon.getRadius());
+//				int fudge = (int) Math.floor(radius / 10);
+//				x1 = thePolygon.getCentroid().x - radius - fudge;
+//				x2 = thePolygon.getCentroid().x + radius + fudge;
+//				z1 = thePolygon.getCentroid().z - radius - fudge;
+//				z2 = thePolygon.getCentroid().z + radius + fudge;
 				
 				player.sendMessage("Using bounding coords of: (" + x1 + "," + z1 + ") (" + x2 + "," + z2 + ")");
 				

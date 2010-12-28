@@ -39,13 +39,16 @@ public class RealmsListener extends PluginListener {
 	private void heal(Player player) {
 		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(player.getX()), (int) Math.floor(player.getY()), (int) Math.floor(player.getZ())));
 		
-		if (player.getHealth() < 20 && rand.nextInt(500) < zone.getHealing()) player.increaseHealth(1);
+		if (player.getHealth() < 20 && rand.nextInt(500) < zone.getHealing()) {
+			int current = player.getHealth();
+			player.setHealth(current + 1);
+		}
 	}
 	
 	@Override
 	public boolean onCommand(Player player, String[] split) {
 		if(split[0].toLowerCase().startsWith("/realms") && player.canUseCommand("/realms")) return realm.realmsCommand(split, player);
-		if(split[0].equalsIgnoreCase("/Wand") && player.canUseCommand("/wand")) return realm.getPlayerWand(player).wandCommand(split);
+		if(split[0].equalsIgnoreCase("/wand") && player.canUseCommand("/wand")) return realm.getPlayerWand(player).wandCommand(split);
 		return false;
 	}
 	
@@ -58,7 +61,16 @@ public class RealmsListener extends PluginListener {
 
 	@Override
 	public void onBlockRightClicked(Player player, Block blockClicked, Item item) {
+		realm.log(Level.INFO, String.format("[DEBUG] onBlockRightClicked: Player-%s; bC-%s; Item-%s", player.getName(),
+				blockClicked, item.itemType.toString()));
 		if(item.getItemId() == realm.wandItem) realm.getPlayerWand(player).wandClick(player, blockClicked);
+//		switch (blockClicked.blockType) {
+//		case WoodDoor:	
+//		case Lever:
+//			if (!realm.permissionCheck(player, Permission.PermType.INTERACT, blockClicked)) {
+//				blockClicked.
+//			}
+//		}
 	}
 	
 	@Override

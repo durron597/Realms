@@ -16,6 +16,7 @@ public class Permission {
 		TELEPORT ("teleport"),
 		MESSAGE ("message"),
 		COMBAT ("combat"),
+		INTERACT ("interact"),
 		NULL ("");
 		
 		private String type;
