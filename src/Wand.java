@@ -96,7 +96,7 @@ public class Wand {
 		// Save vertices
 		if (command[1].equalsIgnoreCase("save")) {
 			if(!mode.equalsIgnoreCase("default")) {
-				if (workingPolygon.isEmpty()) {
+				if (workingPolygon.workingVerticesCleared()) {
 					player.sendMessage("Zone saved with no pylons. Wand back in getInfo mode.");
 					workingPolygon.save();
 					reset();
@@ -118,6 +118,8 @@ public class Wand {
 			PolygonArea thePolygon = null;
 			
 			switch (command.length) {
+			case 1:
+				return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
 			case 2:
 				if (!mode.equalsIgnoreCase("polygon")) return Realms.playerError(player, "Usage: /wand show [x1,z1 x2,z2] [zonename]");
 				else
@@ -141,11 +143,6 @@ public class Wand {
 					if (p.z < z1) z1 = p.z;
 					if (p.z > z2) z2 = p.z;
 				}
-				
-				x1 -= 2;
-				x2 += 2;
-				z1 -= 2;
-				z2 += 2;
 				
 //				int radius = (int) Math.ceil(thePolygon.getRadius());
 //				int fudge = (int) Math.floor(radius / 10);
@@ -186,6 +183,13 @@ public class Wand {
 			int scalez = (int) Math.floor((Math.abs(z1 - z2) - 7)/14.) + 1;
 			if (scalez < 1) scalez = 1;
 			int countz = (int) Math.ceil(Math.abs(z1- z2) / scalez);
+			
+			if (command.length < 4) {
+				x1 = x1 - scalex;
+				x2 = x2 + scalex;
+				z1 = z1 - scalez;
+				z2 = z2 + scalez;
+			}
 			
 			if (scalex > 1) player.sendMessage("Using x scaling factor of " + scalex);
 			if (scalez > 1) player.sendMessage("Using z scaling factor of " + scalez);
