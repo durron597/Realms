@@ -79,6 +79,9 @@ public class PolygonArea {
 		return vertices.size() < 3;
 	}
 
+	public boolean workingVerticesCleared() {
+		return workingVertices.size() == 0;
+	}
 	/*
 	 * Mutator Methods
 	 */
