@@ -160,6 +160,8 @@ public class RealmsListener extends PluginListener {
 	@Override
 	public boolean onMobSpawn(Mob mob) {
 		boolean rValue;
+		
+		if (mob.isAnimal()) return false;
 
 		Zone zone = realm.getZone(realm.everywhere, realm.server.getBlockAt((int) Math.floor(mob.getX()), (int) Math.floor(mob.getY()), (int) Math.floor(mob.getZ())));
 		
