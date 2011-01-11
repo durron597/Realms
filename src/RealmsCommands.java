@@ -326,6 +326,16 @@ public enum RealmsCommands {
 		if (playerName.contains(","))
 			return Realms.playerError(player, "Error: Player names cannot contain commas!");
 		
+		// Give warning message for default group permissions
+		String defaultGroupName = etc.getInstance().getDefaultGroup().Name;
+		String tempString = "";
+		if (playerName.startsWith("g:")) tempString = playerName.replaceAll("g:", "");
+		if (playerName.equalsIgnoreCase(defaultGroupName) || defaultGroupName.equalsIgnoreCase(tempString)) {
+		    player.sendMessage("WARNING! EVERYBODY (including admins) is in the default group. Did you really want to do this?");
+		    player.sendMessage("For exceptions, you probably want to use the OVERRIDE keyword. Example:");
+		    player.sendMessage("/realms " + command[1] + " <player/group name> " + command[3] + " " + command[4] + " OVERRIDE");
+		}
+		
 		// Made it past all the checks!
 		theRealms.setPermission(playerName, type, zone, allowed, override);
 		String p = "";
