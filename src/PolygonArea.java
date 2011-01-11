@@ -1,6 +1,7 @@
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.io.IOException;
 import java.lang.Math;
 
@@ -319,7 +320,7 @@ public class PolygonArea {
 		if(!zone.getParent().contains(block)) return !Realms.playerError(player, "Error: Block not contained within " + zone.getParent().getName());
 		// The vertex must not be contained by sibling zones
 		for(Zone sibling : zone.getParent().getChildren())
-			if(sibling != zone && sibling.contains(block)) return !Realms.playerError(player, "Error: Block already claimed by a sibling zone");
+			if(sibling != zone && sibling.contains(block)) return !Realms.playerError(player, "Error: Block already claimed by a sibling zone: " + sibling.getName());
 		// The vertex must not already be in the vertex list
 		if(containsWorkingVertex(block)) return !Realms.playerError(player, "Error: This column of blocks is already in the vertex list.");
 		// All checks passed: test vertex is valid
@@ -340,8 +341,13 @@ public class PolygonArea {
 		// The polygon must not intersect any other sibling zones
 		for(Zone sibling : zone.getParent().getChildren()) {
 			if(sibling != zone && intersects(sibling.getPolygon().getVertices(), workingVertices)) {
-				if (sibling.getPolygon().getFloor() <= getCeiling() && sibling.getPolygon().getCeiling() >= getFloor())
-					return !Realms.playerError(player, "Error: A block that would be enclosed by this polygon is already claimed by another zone.");
+				if (sibling.getPolygon().getFloor() <= workingCeiling && sibling.getPolygon().getCeiling() >= workingFloor) {
+				    realm.log(Level.INFO, "Floor/Ceiling Overlap. Sibling (" + sibling.getName() + ") C/F:" +
+				            sibling.getPolygon().getCeiling() + "," + sibling.getPolygon().getFloor() +
+				            " NewZone (" + zone.getName() + ") C/F: " + workingCeiling + "," + workingFloor);
+				    return !Realms.playerError(player, "Error: A block enclosed by this polygon is already claimed by " + sibling.getName() + ".");
+				}
+					
 			}
 		}
 		// The polygon must contain all zone children
