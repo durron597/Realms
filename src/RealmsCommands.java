@@ -236,6 +236,9 @@ public enum RealmsCommands {
 			Zone zone = theRealms.getZoneByName(zoneName);
 			if(zone == null) return Realms.playerError(player, "Error: The zone '" + zoneName + "' could not be found!");
 			
+	        if(!theRealms.permissionCheck(player, Permission.PermType.COMBAT, zone))
+	                return Realms.playerError(player, "Error: You do not have permission set healing in " + zone.getName());
+			
 			int newHealing = zone.getAbsoluteHealing();
 			
 			try {
